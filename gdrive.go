@@ -109,7 +109,7 @@ func main() {
 			},
 		},
 		{
-			Pattern:     "[global] download [options] <fileId>",
+			Pattern: "[global] download [options] <fileId>...",
 			Description: "Download file or directory",
 			Callback:    downloadHandler,
 			FlagGroups: cli.FlagGroups{

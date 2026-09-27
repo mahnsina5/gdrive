@@ -286,6 +286,19 @@ func (self *Drive) downloadDirectory(parent *drive.File, args DownloadArgs) erro
 	return nil
 }
 
+func (self *Drive) DownloadMultiple(ids []string, args DownloadArgs) error {
+	for _, id := range ids {
+		fileArgs := args
+		fileArgs.Id = id
+
+		if err := self.Download(fileArgs); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func isDir(f *drive.File) bool {
 	return f.MimeType == DirectoryMimeType
 }

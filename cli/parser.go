@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Parser interface {
@@ -44,19 +45,43 @@ func (self CaptureGroupParser) Match(values []string) ([]string, bool) {
 		return values, false
 	}
 
+	if self.isVariadic() {
+		return []string{}, true
+	}
+
 	return values[1:], true
 }
 
+func (self CaptureGroupParser) isVariadic() bool {
+	return strings.HasSuffix(self.value, ">...")
+}
+
 func (self CaptureGroupParser) key() string {
-	return self.value[1 : len(self.value)-1]
+	key := self.value[1:]
+
+	if self.isVariadic() {
+		key = strings.TrimSuffix(key, ">...")
+	} else {
+		key = strings.TrimSuffix(key, ">")
+	}
+
+	return key
 }
 
 func (self CaptureGroupParser) Capture(values []string) ([]string, map[string]interface{}) {
-	if remainingValues, ok := self.Match(values); ok {
-		return remainingValues, map[string]interface{}{self.key(): values[0]}
+	if len(values) == 0 {
+		return values, nil
 	}
 
-	return values, nil
+	if self.isVariadic() {
+		return []string{}, map[string]interface{}{
+			self.key(): append([]string(nil), values...),
+		}
+	}
+
+	return values[1:], map[string]interface{}{
+		self.key(): values[0],
+	}
 }
 
 func (self CaptureGroupParser) String() string {

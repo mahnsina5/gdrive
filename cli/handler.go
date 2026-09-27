@@ -56,17 +56,9 @@ func (self *Handler) getParser() Parser {
 	return CompleteParser{parsers}
 }
 
-// Split on spaces but ignore spaces inside <...> and [...]
-func (self *Handler) SplitPattern() []string {
-	re := regexp.MustCompile(`(<[^>]+>|\[[^\]]+]|\S+)`)
-	matches := []string{}
 
-	for _, value := range re.FindAllStringSubmatch(self.Pattern, -1) {
-		matches = append(matches, value[1])
-	}
 
-	return matches
-}
+
 
 func SetHandlers(h []*Handler) {
 	handlers = h
@@ -106,7 +98,20 @@ func Handle(args []string) bool {
 }
 
 func isCaptureGroup(arg string) bool {
-	return strings.HasPrefix(arg, "<") && strings.HasSuffix(arg, ">")
+	return strings.HasPrefix(arg, "<") &&
+		(strings.HasSuffix(arg, ">") || strings.HasSuffix(arg, ">..."))
+}
+
+
+func (self *Handler) SplitPattern() []string {
+	re := regexp.MustCompile(`(<[^>]+>\.\.\.|\[[^\]]+\]|\S+)`)
+	matches := []string{}
+
+	for _, value := range re.FindAllStringSubmatch(self.Pattern, -1) {
+		matches = append(matches, value[1])
+	}
+
+	return matches
 }
 
 func isFlagGroup(arg string) bool {

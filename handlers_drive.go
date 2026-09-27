@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+
 	"github.com/carstentrink/gdrive/auth"
 	"github.com/carstentrink/gdrive/cli"
 	"github.com/carstentrink/gdrive/drive"
@@ -55,17 +56,19 @@ func listChangesHandler(ctx cli.Context) {
 func downloadHandler(ctx cli.Context) {
 	args := ctx.Args()
 	checkDownloadArgs(args)
-	err := newDrive(args).Download(drive.DownloadArgs{
+
+	fileIDs := args.StringSlice("fileId")
+
+	err := newDrive(args).DownloadMultiple(fileIDs, drive.DownloadArgs{
 		Out:       os.Stdout,
-		Id:        args.String("fileId"),
 		Force:     args.Bool("force"),
 		Skip:      args.Bool("skip"),
 		Simulate:  args.Bool("simulate"),
-		Path:      args.String("path"),
-		Delete:    args.Bool("delete"),
 		Recursive: args.Bool("recursive"),
+		Delete:    args.Bool("delete"),
 		Stdout:    args.Bool("stdout"),
-		Progress:  progressWriter(args.Bool("noProgress")),
+		Path:      args.String("path"),
+		Progress:  os.Stderr,
 		Timeout:   durationInSeconds(args.Int64("timeout")),
 	})
 	checkErr(err)
@@ -413,6 +416,8 @@ func progressWriter(discard bool) io.Writer {
 	}
 	return os.Stderr
 }
+
+
 
 func durationInSeconds(seconds int64) time.Duration {
 	return time.Second * time.Duration(seconds)
